@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Data Viz Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // One way of dealing with asynchronous code
+      // is with events
+      window.addEventListener("load", () => {
+        // Another way is with a Promise
+        fetch("./data.json").then((response) => {
+          console.log("file was loaded:");
+          response.json().then((data) => {
+            const canvas = document.getElementById("myChart");
+
+            new Chart(canvas, {
+              type: "bar",
+              data: {
+                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                datasets: [
+                  {
+                    label: "# of Votes",
+                    data: [12, 1, 8, 5, 2, 3],
+                    borderWidth: 1,
+                  },
+                ],
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
+              },
+            });
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Bike Crossings</h1>
+    <canvas id="myChart" />
+  </body>
+</html>
