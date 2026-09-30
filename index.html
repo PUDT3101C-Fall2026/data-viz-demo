@@ -6,34 +6,42 @@
     <script>
       // One way of dealing with asynchronous code
       // is with events
-      window.addEventListener("load", () => {
+      window.addEventListener("load", async () => {
         // Another way is with a Promise
-        fetch("./data.json").then((response) => {
-          console.log("file was loaded:");
-          response.json().then((data) => {
-            const canvas = document.getElementById("myChart");
+        let response = await fetch("./data.json");
 
-            new Chart(canvas, {
-              type: "bar",
-              data: {
-                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-                datasets: [
-                  {
-                    label: "# of Votes",
-                    data: [12, 1, 8, 5, 2, 3],
-                    borderWidth: 1,
-                  },
-                ],
+        let data = await response.json();
+
+        data = data.map((value) => ({
+          y: value.count,
+          x: Date.parse(value.time),
+        }));
+
+        console.log(data[0]);
+
+        const canvas = document.getElementById("myChart");
+
+        new Chart(canvas, {
+          type: "line",
+          data: {
+            datasets: [
+              {
+                label: "# of Votes",
+                data: data,
+                borderWidth: 1,
               },
-              options: {
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                  },
-                },
+            ],
+          },
+          options: {
+            scales: {
+              x: {
+                type: "linear",
               },
-            });
-          });
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
         });
       });
     </script>
