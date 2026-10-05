@@ -3,6 +3,7 @@
   <head>
     <title>Data Viz Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-intl"></script>
     <script>
       // One way of dealing with asynchronous code
       // is with events
@@ -15,39 +16,84 @@
         data = data.map((value) => ({
           y: value.count,
           x: Date.parse(value.time),
+          direction: value.direction,
         }));
 
-        console.log(data[0]);
+        data.sort((a, b) => a.x - b.x);
+
+        let mnData = data.filter((value) => value.direction == "WB - MN Bound");
+        let bkData = data.filter((value) => value.direction == "WB - BK Bound");
 
         const canvas = document.getElementById("myChart");
 
-        new Chart(canvas, {
+        let chart = new Chart(canvas, {
           type: "line",
           data: {
-            datasets: [
-              {
-                label: "# of Votes",
-                data: data,
-                borderWidth: 1,
-              },
-            ],
+            datasets: [{ label: "Manhattan" }, { label: "Brooklyn" }],
           },
           options: {
+            elements: {
+              point: {
+                pointStyle: false,
+              },
+              line: {
+                borderWidth: 1,
+                fill: true,
+              },
+            },
             scales: {
               x: {
-                type: "linear",
+                type: "time",
+                min: Date.parse("2026 Sep 16 12:00:00 AM"),
+                max: Date.parse("2026 Sep 17 12:00:00 AM"),
               },
               y: {
-                beginAtZero: true,
+                max: 300,
               },
             },
           },
+        });
+
+        function setDate(date, animate = true) {
+          let start = Date.parse(`2026 Sep ${date} 12:00:00 AM`);
+          let end = Date.parse(`2026 Sep ${date + 1} 12:00:00 AM`);
+
+          let inRange = (row) => row.x >= start && row.x <= end;
+
+          let mnSegment = mnData.filter(inRange);
+          let bkSegment = bkData.filter(inRange);
+
+          chart.options.scales.x.min = start;
+          chart.options.scales.x.max = end;
+
+          chart.data.datasets[0].data = mnSegment;
+          chart.data.datasets[1].data = bkSegment;
+
+          if (animate) {
+            chart.update();
+          } else {
+            chart.update("none");
+          }
+
+          // Update date title
+          document.getElementById("date_title").innerText =
+            `September ${date}, 2026`;
+        }
+
+        setDate(16, false);
+
+        let slider = document.getElementById("date");
+        slider.addEventListener("input", (event) => {
+          let date = parseInt(event.target.value);
+          setDate(date);
         });
       });
     </script>
   </head>
   <body>
     <h1>Bike Crossings</h1>
-    <canvas id="myChart" />
+    <h2 id="date_title"></h2>
+    <canvas id="myChart"></canvas>
+    <input id="date" type="range" min="16" max="22" value="16" />
   </body>
 </html>
